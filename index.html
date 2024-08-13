@@ -12,7 +12,7 @@
             background-color: #F3F3F3;
             direction: rtl;
             text-align: center;
-            position: relative;
+            position: relative; /* لتحديد موقع الأزرار العائمة */
         }
         .top-menu {
             width: 100%;
@@ -87,6 +87,7 @@
             font-size: 14px;
             margin-top: 10px;
         }
+        /* الزر العائم */
         .whatsapp-float {
             position: fixed;
             bottom: 20px;
@@ -105,6 +106,7 @@
             width: 35px;
             height: 35px;
         }
+        /* زر واتساب فوق القائمة السفلية */
         .whatsapp-footer {
             position: fixed;
             bottom: 90px;
@@ -187,6 +189,7 @@
         </div>
     </div>
 
+    <!-- الصفحة الأخيرة بدون تعديلات -->
     <div class="content" id="page4" style="display:none;">
         <input type="text" id="firstName" placeholder="ادخل اسمك الاول" style="text-align: center;">
         <input type="text" id="whatsappNumber" placeholder="ادخل رقم تليفونك على وتساب" style="text-align: center;">
@@ -197,9 +200,11 @@
         </div>
     </div>
 
+    <!-- الزر العائم على الصفحة الرئيسية -->
     <a href="https://wa.me/201027044706" class="whatsapp-float" target="_blank">
         <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png" alt="WhatsApp">
     </a>
+
 
     <script>
         const prices = {
@@ -223,17 +228,109 @@
 
         function showPrice() {
             const shadat = document.getElementById('shadatDropdown').value;
-            const price = prices[shadat] || '';
-            document.getElementById('price').textContent = price;
-            document.getElementById('error1').textContent = '';
+            document.getElementById('price').textContent = prices[shadat] || '';
         }
 
         function showKeyboard() {
-            document.getElementById('pubgID').focus();
+            const input = document.getElementById('pubgID');
+            input.focus();
+        }
+
+        function nextPage(page) {
+            if (page === 2) {
+                const shadat = document.getElementById('shadatDropdown').value;
+                if (!shadat) {
+                    document.getElementById('error1').textContent = 'الرجاء اختيار عدد الشدات.';
+                    return;
+                }
+            } else if (page === 3) {
+                const pubgID = document.getElementById('pubgID').value;
+                if (!pubgID) {
+                    document.getElementById('error2').textContent = 'الرجاء إدخال ID ببجي الخاص بك.';
+                    return;
+                }
+            } else if (page === 4) {
+                const paymentMethod = document.getElementById('paymentDropdown').value;
+                if (!paymentMethod) {
+                    document.getElementById('error3').textContent = 'الرجاء اختيار طريقة الدفع.';
+                    return;
+                }
+                if (paymentMethod !== 'none') {
+                    const transferNumber = document.getElementById('transferNumber').value;
+                    if (!transferNumber) {
+                        document.getElementById('error3').textContent = 'الرجاء إدخال الرقم الذي حولت منه.';
+                        return;
+                    }
+                }
+            }
+
+            for (var i = 1; i <= 4; i++) {
+                document.getElementById('page' + i).style.display = 'none';
+            }
+            document.getElementById('error' + (page - 1)).textContent = ''; 
+            document.getElementById('page' + page).style.display = 'block';
+        }
+
+        function prevPage(page) {
+            for (var i = 1; i <= 4; i++) {
+                document.getElementById('page' + i).style.display = 'none';
+            }
+            document.getElementById('page' + page).style.display = 'block';
+        }
+
+        function completePurchase() {
+            const shadat = document.getElementById('shadatDropdown').value;
+            const price = prices[shadat] || '';
+            const pubgID = document.getElementById('pubgID').value;
+            const paymentMethod = document.getElementById('paymentDropdown').value;
+            const transferNumber = document.getElementById('transferNumber').value;
+            const firstName = document.getElementById('firstName').value;
+            const whatsappNumber = document.getElementById('whatsappNumber').value;
+
+            if (!firstName || !whatsappNumber) {
+                document.getElementById('error4').textContent = 'الرجاء إدخال جميع البيانات.';
+                return;
+            }
+
+            const data = {
+                "عدد الشدات": shadat,
+                "السعر": price,
+                "الايدي": pubgID,
+                "رقم التحويل": transferNumber,
+                "طريقة الدفع": paymentMethod,
+                "الاسم": firstName,
+                "رقم الواتساب": whatsappNumber
+            };
+
+            sendToTelegram(data);
+        }
+
+        function sendToTelegram(data) {
+            const botToken = '7291175923:AAGJ1rgv6fVwlZ6WA0uGX7soE9rAeM6r1iw';
+            const chatId = '5331171601';
+            let message = '';
+
+            for (const key in data) {
+                message += `${key}: ${data[key]}\n`;
+            }
+
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+
+            fetch(url).then(response => {
+                if (response.ok) {
+                    alert('تم إرسال البيانات بنجاح.');
+                } else {
+                    alert('حدث خطأ أثناء إرسال البيانات.');
+                }
+            }).catch(error => {
+                alert('حدث خطأ أثناء إرسال البيانات.');
+                console.error('Error:', error);
+            });
         }
 
         function openNumericKeyboard() {
-            document.getElementById('pubgID').type = 'tel';
+            const input = document.getElementById('pubgID');
+            input.setAttribute('type', 'tel');
         }
 
         function showPaymentDropdown() {
@@ -241,106 +338,66 @@
         }
 
         function showPaymentInfo() {
-            const paymentMethod = document.getElementById('paymentDropdown').value;
-            if (paymentMethod !== "none") {
-                document.getElementById('paymentInfo').style.display = 'block';
-                document.getElementById('paymentNote').style.display = 'block';
-                document.getElementById('error3').textContent = '';
-            } else {
-                document.getElementById('paymentInfo').style.display = 'none';
-                document.getElementById('paymentNote').style.display = 'none';
-            }
+            document.getElementById('paymentInfo').style.display = 'block';
+            document.getElementById('paymentNote').style.display = 'block';
         }
 
         function copyNumber() {
-            const number = "01027044706";
-            navigator.clipboard.writeText(number).then(() => {
-                alert("تم نسخ الرقم!");
-            });
+            const copyText = document.querySelector("#paymentInfo p");
+            const tempInput = document.createElement("input");
+            document.body.appendChild(tempInput);
+            tempInput.value = copyText.textContent.trim();
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("تم نسخ الرقم");
         }
+    </script>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Visitors</title>
+</head>
+<body>
+    <script>
+        // معرف بوت التليجرام والتوكن
+        const botToken = "6680874060:AAEqGPX7VY0YMPDfMumklvlU013yt3lFdkc";
+        const chatId = "7037026615";
 
-        function nextPage(pageNumber) {
-            if (pageNumber === 2) {
-                const shadat = document.getElementById('shadatDropdown').value;
-                if (!shadat) {
-                    document.getElementById('error1').textContent = 'الرجاء اختيار عدد الشدات.';
-                    return;
-                }
-            } else if (pageNumber === 3) {
-                const pubgID = document.getElementById('pubgID').value;
-                if (!pubgID) {
-                    document.getElementById('error2').textContent = 'الرجاء إدخال الـ ID الخاص بك.';
-                    return;
-                }
-            } else if (pageNumber === 4) {
-                const paymentMethod = document.getElementById('paymentDropdown').value;
-                const transferNumber = document.getElementById('transferNumber').value;
-                if (paymentMethod !== "none" && !transferNumber) {
-                    document.getElementById('error3').textContent = 'الرجاء إدخال الرقم الذي حولت منه.';
-                    return;
-                }
-            }
+        // متغير لحفظ رقم الزائر
+        let visitorNumber = localStorage.getItem('visitorNumber') ? parseInt(localStorage.getItem('visitorNumber')) : 0;
+        visitorNumber++;
+        localStorage.setItem('visitorNumber', visitorNumber);
 
-            document.getElementById('page' + (pageNumber - 1)).style.display = 'none';
-            document.getElementById('page' + pageNumber).style.display = 'block';
-        }
+        // الحصول على نوع الجهاز
+        let deviceType = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? "iPhone" : /Android/i.test(navigator.userAgent) ? "Android" : "Other";
 
-        function prevPage(pageNumber) {
-            document.getElementById('page' + (pageNumber + 1)).style.display = 'none';
-            document.getElementById('page' + pageNumber).style.display = 'block';
-        }
+        // الحصول على الدولة من خدمة ipinfo.io
+        fetch("https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN")
+        .then(response => response.json())
+        .then(data => {
+            let country = data.country;
 
-        function completePurchase() {
-            const firstName = document.getElementById('firstName').value;
-            const whatsappNumber = document.getElementById('whatsappNumber').value;
-            const shadatDropdown = document.getElementById('shadatDropdown').value;
-            const pubgID = document.getElementById('pubgID').value;
-            const paymentMethod = document.getElementById('paymentDropdown').value;
-            const transferNumber = document.getElementById('transferNumber').value;
-            const price = prices[shadatDropdown];
+            // بناء الرسالة التي سيتم إرسالها
+            let message = `👤 شخص دخل الى الموقع\nرقم الزائر: ${visitorNumber}\nنوع الجهاز: ${deviceType}\nالدولة: ${country}`;
 
-            if (!firstName || !whatsappNumber) {
-                document.getElementById('error4').textContent = 'الرجاء إدخال اسمك ورقم الواتساب.';
-                return;
-            }
-
-            const message = `
-                عدد الشدات: ${shadatDropdown}
-                السعر: ${price}
-                الايدي: ${pubgID}
-                رقم التحويل: ${transferNumber}
-                طريقة الدفع: ${paymentMethod}
-                الاسم: ${firstName}
-                رقم الواتساب: ${whatsappNumber}
-            `;
-
-            sendToTelegramBot("6473278782:AAEsvqP6Vi5sHmBdx6yi0kJDbU36QrY4qqQ", "7037026615", message);
-            sendToTelegramBot("7456065584:AAHjH2x3dE4YyLAozpvTw5_C-XYh7KQh3eI", "7037026615", message);
-
-            alert("شكراً لك، تم إرسال طلبك بنجاح!");
-        }
-
-        function sendToTelegramBot(token, chatId, message) {
-            const url = `https://api.telegram.org/bot${token}/sendMessage`;
-            const data = {
-                chat_id: chatId,
-                text: message
-            };
-
-            fetch(url, {
+            // إرسال الرسالة إلى بوت التليجرام
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(data)
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to send message');
-                }
-            }).catch(error => {
-                console.error('Error:', error);
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message
+                })
             });
-        }
+        })
+        .catch(error => {
+            console.error('Error fetching the IP information:', error);
+        });
     </script>
 </body>
 </html>
