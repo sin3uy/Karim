@@ -2,402 +2,286 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر كريم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سيناوي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Cairo', sans-serif;
             background-color: #F3F3F3;
-            direction: rtl;
-            text-align: center;
-            position: relative; /* لتحديد موقع الأزرار العائمة */
         }
-        .top-menu {
-            width: 100%;
-            height: 80px;
-            background-color: #141B3D;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .top-menu, .footer {
+            background: linear-gradient(45deg, #1B2452, #244AFF, #1B2452);
+            background-size: 200% 200%;
+            animation: gradientAnimation 7s ease infinite;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
             position: fixed;
-            top: 0;
-            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .top-menu {
+            height: 80px;
+            line-height: 80px;
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
+            top: 0;
+            left: 0;
         }
-        .content {
-            margin-top: 100px;
-            padding: 20px;
-        }
-        button, select, input {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 10px;
-            border: 1px solid #141B3D;
-            width: 300px;
-            font-size: 16px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        button {
-            background-color: #141B3D;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #2D3A68;
-        }
-        input[type="text"] {
-            text-align: center;
-        }
-        .back-button {
-            background-color: #FF6666;
-            width: 120px;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .back-button:hover {
-            background-color: #FF3333;
-        }
-        .note {
-            margin-top: 20px;
-            background-color: rgba(0, 255, 0, 0.3);
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            display: none;
-        }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-        .price {
-            font-size: 18px;
-            color: #141B3D;
-            margin-top: 10px;
-        }
-        .error {
-            color: red;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        /* الزر العائم */
-        .whatsapp-float {
+
+        .status-bar {
+            background-color: transparent;
+            color: #1B2452;
+            height: 30px;
+            line-height: 30px;
+            text-align: right;
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background-color: #25D366;
+            top: 100px;
+            right: 10px;
+            width: auto;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .status-container {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 5px 15px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 8px;
+            display: inline-block;
+        }
+
+        .status-dot.green {
+            background-color: green;
+        }
+
+        .status-dot.red {
+            background-color: red;
+        }
+
+        .profile-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid white;
+            margin-left: 8px;
+        }
+
+        .notification-icon {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
-            align-items: center;
             justify-content: center;
-            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            align-items: center;
+            margin-left: 15px;
+            cursor: pointer;
+            position: relative;
         }
-        .whatsapp-float img {
-            width: 35px;
-            height: 35px;
+
+        .notification-popup {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            width: 250px;
+            max-height: 200px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            overflow-y: scroll;
         }
-        /* زر واتساب فوق القائمة السفلية */
-        .whatsapp-footer {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            background-color: #25D366;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 50px;
-            text-decoration: none;
+
+        .notification-popup p {
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .notification-popup .notification-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            margin-bottom: 10px;
         }
-        .whatsapp-footer img {
+
+        .notification-popup .notification-item img {
             width: 20px;
             height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            background-color: rgba(173, 216, 230, 0.5); /* لون أزرق خفيف لخلفية الصورة */
+            padding: 5px; /* إضافة بعض التباعد حول الصورة */
+        }
+
+        .notification-popup .notification-item .message {
+            font-size: 12px;
+        }
+
+        .notification-popup .notification-item .message-container {
+            background-color: rgba(173, 216, 230, 0.5); /* لون أزرق خفيف */
+            border-radius: 10px;
+            padding: 5px 10px;
+        }
+
+        .footer {
+            padding: 5px 0;
+            font-size: 13px;
+            bottom: 0;
+            left: 0;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
+    <div class="top-menu">سيناوي</div>
 
-    <div class="top-menu">
-        متجر كريم
-    </div>
-
-    <div class="content" id="page1">
-        <button onclick="showDropdown()">انقر لاختيار عدد الشدات</button>
-        <select id="shadatDropdown" style="display:none;" onchange="showPrice()">
-            <option value="" disabled selected>اختر عدد الشدات</option>
-            <option value="30">30 شده</option>
-            <option value="60">60 شده</option>
-            <option value="120">120 شده</option>
-            <option value="360">360 شده</option>
-            <option value="720">720 شده</option>
-            <option value="1200">1200 شده</option>
-            <option value="1440">1440 شده</option>
-            <option value="2000">2000 شده</option>
-            <option value="4000">4000 شده</option>
-            <option value="6000">6000 شده</option>
-            <option value="8000">8000 شده</option>
-            <option value="16000">16000 شده</option>
-        </select>
-        <p id="price" class="price"></p>
-        <p id="error1" class="error"></p>
-        <button onclick="nextPage(2)">التالي</button>
-    </div>
-
-    <div class="content" id="page2" style="display:none;">
-        <button onclick="showKeyboard()">اضغط هنا لإدخال ID الخاص بك في ببجي</button>
-        <input type="text" id="pubgID" onfocus="openNumericKeyboard()" placeholder="أدخل الـ ID هنا" style="text-align: center;">
-        <p id="error2" class="error"></p>
-        <div class="button-group">
-            <button onclick="nextPage(3)">التالي</button>
-            <button class="back-button" onclick="prevPage(1)">رجوع</button>
-        </div>
-    </div>
-
-    <div class="content" id="page3" style="display:none;">
-        <button onclick="showPaymentDropdown()">اختيار طريقة الدفع</button>
-        <select id="paymentDropdown" style="display:none;" onchange="showPaymentInfo()">
-            <option value="" disabled selected>اختر طريقة الدفع</option>
-            <option value="none">غير محدد</option>
-            <option value="vodafone">فودافون كاش</option>
-            <option value="orange">اورنج كاش</option>
-            <option value="etisalat">اتصالات كاش</option>
-        </select>
-        <div id="paymentInfo" style="display:none;">
-            <p>01027044706<button onclick="copyNumber()">نسخ</button></p>
-            <input type="text" id="transferNumber" placeholder="أدخل الرقم الذي حولت منه" style="text-align: center;">
-            <div class="note" id="paymentNote">
-                طريقة الدفع: انسخ الرقم الظاهر أمامك ثم اذهب للتحويل عليه المبلغ الذي قمت بشراء به الشدات ♥ بعد ذلك أدخل الرقم الذي حولت منه المبلغ إلى هذا الرقم 01027044706
+    <!-- شريط الحالة -->
+    <div class="status-bar">
+        <div class="status-container">
+            <span id="status-text">جاري التحقق من الحالة...</span>
+            <span id="status-dot" class="status-dot"></span>
+            <img src="https://i.postimg.cc/v8CkLKTb/Picsart-24-09-03-18-28-24-623.png" alt="Profile Image" class="profile-image">
+            <!-- زر الإشعارات -->
+            <div class="notification-icon" onclick="toggleNotificationPopup()">
+                🔔
             </div>
-        </div>
-        <p id="error3" class="error"></p>
-        <div class="button-group">
-            <button onclick="nextPage(4)">التالي</button>
-            <button class="back-button" onclick="prevPage(2)">رجوع</button>
+            <!-- القائمة المنبثقة للإشعارات -->
+            <div class="notification-popup" id="notification-popup"></div>
         </div>
     </div>
 
-    <!-- الصفحة الأخيرة بدون تعديلات -->
-    <div class="content" id="page4" style="display:none;">
-        <input type="text" id="firstName" placeholder="ادخل اسمك الاول" style="text-align: center;">
-        <input type="text" id="whatsappNumber" placeholder="ادخل رقم تليفونك على وتساب" style="text-align: center;">
-        <p id="error4" class="error"></p>
-        <div class="button-group">
-            <button onclick="completePurchase()">تم الشراء</button>
-            <button class="back-button" onclick="prevPage(3)">رجوع</button>
-        </div>
+    <!-- القائمة السفلية -->
+    <div class="footer">
+        جميع الحقوق محفوظة من سيناوي
     </div>
 
-    <!-- الزر العائم على الصفحة الرئيسية -->
-    <a href="https://wa.me/201027044706" class="whatsapp-float" target="_blank">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png" alt="WhatsApp">
-    </a>
-
-
     <script>
-        const prices = {
-            "30": "25 جنيه",
-            "60": "50 جنيه",
-            "120": "100 جنيه",
-            "360": "240 جنيه",
-            "720": "480 جنيه",
-            "1200": "800 جنيه",
-            "1440": "990 جنيه",
-            "2000": "1300 جنيه",
-            "4000": "2600 جنيه",
-            "6000": "3900 جنيه",
-            "8000": "5000 جنيه",
-            "16000": "10000 جنيه"
-        };
+        // حالة الاتصال
+        const statusDot = document.getElementById("status-dot");
+        const statusText = document.getElementById("status-text");
 
-        function showDropdown() {
-            document.getElementById('shadatDropdown').style.display = 'block';
-        }
+        function updateStatus() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinutes = now.getMinutes();
 
-        function showPrice() {
-            const shadat = document.getElementById('shadatDropdown').value;
-            document.getElementById('price').textContent = prices[shadat] || '';
-        }
-
-        function showKeyboard() {
-            const input = document.getElementById('pubgID');
-            input.focus();
-        }
-
-        function nextPage(page) {
-            if (page === 2) {
-                const shadat = document.getElementById('shadatDropdown').value;
-                if (!shadat) {
-                    document.getElementById('error1').textContent = 'الرجاء اختيار عدد الشدات.';
-                    return;
-                }
-            } else if (page === 3) {
-                const pubgID = document.getElementById('pubgID').value;
-                if (!pubgID) {
-                    document.getElementById('error2').textContent = 'الرجاء إدخال ID ببجي الخاص بك.';
-                    return;
-                }
-            } else if (page === 4) {
-                const paymentMethod = document.getElementById('paymentDropdown').value;
-                if (!paymentMethod) {
-                    document.getElementById('error3').textContent = 'الرجاء اختيار طريقة الدفع.';
-                    return;
-                }
-                if (paymentMethod !== 'none') {
-                    const transferNumber = document.getElementById('transferNumber').value;
-                    if (!transferNumber) {
-                        document.getElementById('error3').textContent = 'الرجاء إدخال الرقم الذي حولت منه.';
-                        return;
-                    }
-                }
+            if ((currentHour > 9 || (currentHour === 9 && currentMinutes >= 30)) && (currentHour < 23 || (currentHour === 23 && currentMinutes <= 30))) {
+                statusDot.classList.remove('red');
+                statusDot.classList.add('green');
+                statusText.innerText = "متصل الآن";
+            } else {
+                statusDot.classList.remove('green');
+                statusDot.classList.add('red');
+                statusText.innerText = "غير متصل";
             }
+        }
 
-            for (var i = 1; i <= 4; i++) {
-                document.getElementById('page' + i).style.display = 'none';
+        updateStatus();
+        setInterval(updateStatus, 60000); // تحديث كل دقيقة
+
+        // عرض وإخفاء قائمة الإشعارات
+        function toggleNotificationPopup() {
+            const popup = document.getElementById("notification-popup");
+            popup.style.display = popup.style.display === "none" || popup.style.display === "" ? "flex" : "none";
+        }
+
+        // جلب الرسائل المخزنة في Local Storage
+        function loadNotifications() {
+            const storedNotifications = localStorage.getItem("notifications");
+            return storedNotifications ? JSON.parse(storedNotifications) : [];
+        }
+
+        // حفظ الرسائل في Local Storage
+        function saveNotification(message) {
+            const notifications = loadNotifications();
+            notifications.unshift(message); // إضافة الرسالة الجديدة في الأعلى
+            localStorage.setItem("notifications", JSON.stringify(notifications));
+            renderNotifications(); // تحديث واجهة الإشعارات
+        }
+
+        // عرض الإشعارات في القائمة المنبثقة
+        function renderNotifications() {
+            const popup = document.getElementById("notification-popup");
+            const notifications = loadNotifications();
+
+            popup.innerHTML = ""; // تفريغ الإشعارات القديمة
+
+            if (notifications.length === 0) {
+                popup.innerHTML = "<p>لا يوجد رسائل</p>";
+            } else {
+                notifications.forEach((notification) => {
+                    const item = document.createElement("div");
+                    item.classList.add("notification-item");
+
+                    const img = document.createElement("img");
+                    img.src = "https://i.postimg.cc/yNnQ1xCj/Picsart-24-09-03-18-28-24-623.png"; // صورة الإشعارات
+                    img.alt = "Notification Icon";
+
+                    const messageContainer = document.createElement("div");
+                    messageContainer.classList.add("message-container");
+
+                    const message = document.createElement("p");
+                    message.classList.add("message");
+                    message.textContent = notification;
+
+                    messageContainer.appendChild(message);
+                    item.appendChild(img);
+                    item.appendChild(messageContainer);
+
+                    popup.appendChild(item);
+                });
             }
-            document.getElementById('error' + (page - 1)).textContent = ''; 
-            document.getElementById('page' + page).style.display = 'block';
         }
 
-        function prevPage(page) {
-            for (var i = 1; i <= 4; i++) {
-                document.getElementById('page' + i).style.display = 'none';
-            }
-            document.getElementById('page' + page).style.display = 'block';
-        }
+       // جلب الرسائل من بوت التليجرام
+function fetchTelegramMessages() {
+    const botToken = "7507243035:AAFqXpYxvvOLswrjhDrFNdVLmTOs5o0O5Oc";
+    const apiUrl = `https://api.telegram.org/bot${botToken}/getUpdates`;
 
-        function completePurchase() {
-            const shadat = document.getElementById('shadatDropdown').value;
-            const price = prices[shadat] || '';
-            const pubgID = document.getElementById('pubgID').value;
-            const paymentMethod = document.getElementById('paymentDropdown').value;
-            const transferNumber = document.getElementById('transferNumber').value;
-            const firstName = document.getElementById('firstName').value;
-            const whatsappNumber = document.getElementById('whatsappNumber').value;
-
-            if (!firstName || !whatsappNumber) {
-                document.getElementById('error4').textContent = 'الرجاء إدخال جميع البيانات.';
-                return;
-            }
-
-            const data = {
-                "عدد الشدات": shadat,
-                "السعر": price,
-                "الايدي": pubgID,
-                "رقم التحويل": transferNumber,
-                "طريقة الدفع": paymentMethod,
-                "الاسم": firstName,
-                "رقم الواتساب": whatsappNumber
-            };
-
-            sendToTelegram(data);
-        }
-
-        function sendToTelegram(data) {
-            const botToken = '7291175923:AAGJ1rgv6fVwlZ6WA0uGX7soE9rAeM6r1iw';
-            const chatId = '5331171601';
-            let message = '';
-
-            for (const key in data) {
-                message += `${key}: ${data[key]}\n`;
-            }
-
-            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
-
-            fetch(url).then(response => {
-                if (response.ok) {
-                    alert('تم إرسال البيانات بنجاح.');
-                } else {
-                    alert('حدث خطأ أثناء إرسال البيانات.');
-                }
-            }).catch(error => {
-                alert('حدث خطأ أثناء إرسال البيانات.');
-                console.error('Error:', error);
-            });
-        }
-
-        function openNumericKeyboard() {
-            const input = document.getElementById('pubgID');
-            input.setAttribute('type', 'tel');
-        }
-
-        function showPaymentDropdown() {
-            document.getElementById('paymentDropdown').style.display = 'block';
-        }
-
-        function showPaymentInfo() {
-            document.getElementById('paymentInfo').style.display = 'block';
-            document.getElementById('paymentNote').style.display = 'block';
-        }
-
-        function copyNumber() {
-            const copyText = document.querySelector("#paymentInfo p");
-            const tempInput = document.createElement("input");
-            document.body.appendChild(tempInput);
-            tempInput.value = copyText.textContent.trim();
-            tempInput.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            alert("تم نسخ الرقم");
-        }
-    </script>
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracking Visitors</title>
-</head>
-<body>
-    <script>
-        // معرف بوت التليجرام والتوكن
-        const botToken = "6680874060:AAEqGPX7VY0YMPDfMumklvlU013yt3lFdkc";
-        const chatId = "7037026615";
-
-        // متغير لحفظ رقم الزائر
-        let visitorNumber = localStorage.getItem('visitorNumber') ? parseInt(localStorage.getItem('visitorNumber')) : 0;
-        visitorNumber++;
-        localStorage.setItem('visitorNumber', visitorNumber);
-
-        // الحصول على نوع الجهاز
-        let deviceType = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? "iPhone" : /Android/i.test(navigator.userAgent) ? "Android" : "Other";
-
-        // الحصول على الدولة من خدمة ipinfo.io
-        fetch("https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN")
+    fetch(apiUrl)
         .then(response => response.json())
         .then(data => {
-            let country = data.country;
-
-            // بناء الرسالة التي سيتم إرسالها
-            let message = `👤 شخص دخل الى الموقع\nرقم الزائر: ${visitorNumber}\nنوع الجهاز: ${deviceType}\nالدولة: ${country}`;
-
-            // إرسال الرسالة إلى بوت التليجرام
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: message
-                })
-            });
+            const messages = data.result;
+            if (messages && messages.length > 0) {
+                const lastMessage = messages[messages.length - 1].message.text;
+                
+                // التحقق مما إذا كانت الرسالة موجودة بالفعل في Local Storage
+                const notifications = loadNotifications();
+                if (!notifications.includes(lastMessage)) {
+                    saveNotification(lastMessage);  // إذا لم تكن الرسالة موجودة، احفظها
+                }
+            }
         })
-        .catch(error => {
-            console.error('Error fetching the IP information:', error);
-        });
-    </script>
-</body>
+        .catch(error => console.error("Error fetching Telegram messages:", error));
+}
+
+// جلب الرسائل عند تحميل الصفحة
+window.onload = function() {
+    renderNotifications();
+    fetchTelegramMessages();  // جلب الرسائل من بوت التليجرام عند تحميل الصفحة
+}
+                </script>
+                </body>
 </html>
