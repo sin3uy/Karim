@@ -211,14 +211,17 @@
     let isConnected = true; // حالة الاتصال (يمكن تغييرها لاحقًا بناءً على الحالة الحقيقية)
     let lastUpdateId = null; // متغير لتتبع آخر رسالة استلمناها
 
-    // تبديل عرض الدردشة
-    function toggleChat() {
-        const chatBox = document.getElementById('chatBox');
-        chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
-
-        // التمرير إلى أسفل الدردشة
-        scrollToBottom();
+// تبديل عرض الدردشة
+function toggleChat() {
+    const chatBox = document.getElementById('chatBox');
+    if (chatBox.style.display === 'none' || chatBox.style.display === '') {
+        chatBox.style.display = 'block';
+        // التمرير إلى أسفل الدردشة بعد عرض الصندوق
+        setTimeout(scrollToBottom, 10); // تأخير صغير للتأكد من ظهور الصندوق قبل التمرير
+    } else {
+        chatBox.style.display = 'none';
     }
+}
 
     // تحديث حالة الاتصال
     function updateConnectionStatus() {
@@ -403,4 +406,4 @@
         </script>
         
         </body>
-        </html>
+</html>
