@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget</title>
+
+    <!-- إضافة خط Cairo من Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400&display=swap" rel="stylesheet">
+
+    <style>
+        /* تطبيق الخط على كامل الصفحة */
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* أيقونة الدردشة */
+        .chat-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-image: url('https://i.postimg.cc/0y7dfhLR/customer-service.png');
+            background-size: cover;
+            cursor: pointer;
+        }
+
+        /* صندوق الدردشة */
+        .chat-box {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100%;
+            max-width: 360px; /* تحديد أقصى عرض لصندوق الدردشة */
+            height: 400px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            box-sizing: border-box; /* يشمل الحشو في العرض والارتفاع */
+            overflow: hidden; /* لتجنب التمرير المزدوج */
+        }
+
+        /* رأس الدردشة */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            background-color: #ddd;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            box-sizing: border-box;
+            position: relative; /* لتحديد موقع زر الإغلاق بشكل صحيح */
+        }
+
+        .chat-header img {
+            width: 30px; /* تغيير حجم الصورة */
+            height: 30px; /* تغيير حجم الصورة */
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chat-header .status {
+            margin-left: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header .status-text {
+            font-size: 0.9em;
+            margin-right: 5px;
+        }
+
+        .chat-header .status-dot {
+            width: 8px; /* تغيير حجم النقطة */
+            height: 8px; /* تغيير حجم النقطة */
+            border-radius: 50%;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #555;
+        }
+
+        /* جسم الدردشة */
+        .chat-body {
+            height: calc(100% - 100px); /* تخصيص الارتفاع المتبقي لصندوق الدردشة */
+            overflow-y: auto;
+            padding: 10px;
+            background-color: white;
+            box-sizing: border-box;
+            direction: rtl; /* تعيين اتجاه النص من اليمين لليسار */
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px; /* إضافة مسافة بين الرسائل */
+            direction: rtl; /* تعيين اتجاه النص من اليمين لليسار */
+        }
+
+        .message img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px; /* محاذاة الصورة لليسار */
+        }
+
+        .message-content {
+            background-color: #eee;
+            border-radius: 5px;
+            padding: 5px; /* تقليل الحشو */
+            max-width: 200px; /* تقليل العرض */
+            word-wrap: break-word;
+            font-size: 0.9em; /* تصغير حجم الخط */
+            display: inline-block;
+            margin-right: 10px; /* محاذاة النص لليمين */
+            position: relative;
+            vertical-align: top; /* محاذاة النص بجانب الصورة */
+        }
+
+        /* إضافة مسافة بين النص والصورة */
+        .message-content:before {
+            content: '';
+            display: block;
+            height: 10px; /* المسافة بين الصورة والنص */
+        }
+
+        /* معلومات الرسالة */
+        .message-info {
+            font-size: 0.8em; /* تصغير حجم الخط */
+            color: rgba(0, 0, 0, 0.6);
+            margin-right: 10px; /* محاذاة معلومات الرسالة لليمين */
+            align-self: flex-start;
+        }
+
+        /* وقت الرسالة */
+        .message-time {
+            font-size: 0.8em; /* تصغير حجم الخط للوقت */
+            color: #777;
+            margin-top: 5px;
+            text-align: left; /* محاذاة الوقت لليسار */
+        }
+
+        /* حقل الإدخال */
+        .chat-footer {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #ddd;
+            box-sizing: border-box;
+        }
+
+        .chat-footer input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .chat-footer button {
+            background-image: url('https://i.postimg.cc/BbxHgKV5/send.png');
+            background-size: cover;
+            width: 30px;
+            height: 30px;
+            border: none;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<!-- أيقونة الدردشة -->
+<div class="chat-icon" onclick="toggleChat()"></div>
+
+<!-- صندوق الدردشة -->
+<div class="chat-box" id="chatBox">
+    <div class="chat-header">
+        <img src="https://i.postimg.cc/yNnQ1xCj/Picsart-24-09-03-18-28-24-623.png" alt="Shadi">
+        <div class="status">
+            <div class="status-text" id="statusText">شادي</div>
+            <div class="status-dot" id="statusDot"></div>
+        </div>
+        <!-- زر الإغلاق -->
+        <div class="close-btn" onclick="closeChat()">×</div>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <!-- الرسائل ستظهر هنا -->
+    </div>
+    <div class="chat-footer">
+        <input type="text" id="messageInput" placeholder="اكتب رسالة...">
+        <button onclick="sendMessage()"></button>
+    </div>
+</div>
+
+<script>
+    let isConnected = true; // حالة الاتصال (يمكن تغييرها لاحقًا بناءً على الحالة الحقيقية)
+    let lastUpdateId = null; // متغير لتتبع آخر رسالة استلمناها
+
+    // تبديل عرض الدردشة
+    function toggleChat() {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.style.display = chatBox.style.display === 'none' ? 'block' : 'none';
+
+        // التمرير إلى أسفل الدردشة
+        scrollToBottom();
+    }
+
+    // تحديث حالة الاتصال
+    function updateConnectionStatus() {
+        const statusText = document.getElementById('statusText');
+        const statusDot = document.getElementById('statusDot');
+        const now = new Date();
+        const startHour = 9;
+        const startMinute = 30;
+        const endHour = 23;
+        const endMinute = 30;
+
+        const startTime = new Date();
+        startTime.setHours(startHour, startMinute, 0, 0);
+
+        const endTime = new Date();
+        endTime.setHours(endHour, endMinute, 0, 0);
+
+        if (now >= startTime && now <= endTime) {
+            statusText.textContent = 'متصل الآن';
+            statusDot.style.backgroundColor = 'green';
+        } else {
+            statusText.textContent = 'غير متصل';
+            statusDot.style.backgroundColor = 'red';
+        }
+    }
+
+    // استرجاع الرسائل المحفوظة
+    function loadMessages() {
+        const chatBody = document.getElementById('chatBody');
+        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+
+        // عرض الرسائل المحفوظة
+        messages.forEach(msg => {
+            displayMessage(msg.text, msg.fromBot, msg.time);
+        });
+
+        // التمرير إلى أسفل الدردشة
+        scrollToBottom();
+    }
+
+    // حفظ الرسائل إلى localStorage
+    function saveMessage(message, fromBot) {
+        let messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        messages.push({ text: message, fromBot, time: new Date().toLocaleTimeString() });
+        localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+
+    // عرض الرسالة
+    function displayMessage(message, fromBot, time) {
+        const chatBody = document.getElementById('chatBody');
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message';
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        
+        const img = document.createElement('img');
+        img.src = fromBot ? 'https://i.postimg.cc/yNnQ1xCj/Picsart-24-09-03-18-28-24-623.png' : 'https://i.postimg.cc/c1wYtCbx/user.png';
+        messageContainer.appendChild(img);
+        
+        const content = document.createElement('div');
+        content.textContent = message;
+        messageContent.appendChild(content);
+        
+        const messageInfo = document.createElement('div');
+        messageInfo.className = 'message-info';
+        messageInfo.textContent = fromBot ? 'مالك' : 'مستخدم';
+        messageContainer.appendChild(messageInfo);
+        
+        const messageTime = document.createElement('div');
+        messageTime.className = 'message-time';
+        messageTime.textContent = time; // عرض الوقت فقط
+        messageContent.appendChild(messageTime);
+        
+        messageContainer.appendChild(messageContent);
+        chatBody.appendChild(messageContainer);
+        }
+        
+        // التمرير إلى أسفل الدردشة
+        function scrollToBottom() {
+        const chatBody = document.getElementById('chatBody');
+        chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        // إرسال الرسالة
+        function sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const message = messageInput.value;
+        
+        if (message.trim() === '') return;
+        
+        // إرسال الرسالة إلى تليجرام
+        sendToTelegram(message)
+        .then(() => {
+        // إضافة الرسالة إلى واجهة المستخدم بعد الإرسال الناجح
+        const currentTime = new Date().toLocaleTimeString();
+        displayMessage(message, false, currentTime);
+        
+        // حفظ الرسالة في localStorage
+        saveMessage(message, false);
+        
+        // تفريغ حقل الإدخال
+        messageInput.value = '';
+        
+        // التمرير إلى أسفل الدردشة
+        scrollToBottom();
+        })
+        .catch(error => {
+        console.error('Error sending message:', error);
+        });
+        }
+        
+        // إرسال الرسالة إلى تليجرام
+        function sendToTelegram(message) {
+        const token = '7519208309:AAF3UdYlx5VtE50QN2oiQ7-HVh9e0tVicac';
+        const chatId = '6809590839';
+        const url = `https://api.telegram.org/bot${token}/sendMessage`;
+        
+        return fetch(url, {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+        chat_id: chatId,
+        text: message
+        })
+        }).then(response => response.json());
+        }
+        
+        // تحديث حالة الاتصال عند تحميل الصفحة
+        window.onload = function() {
+        updateConnectionStatus();
+        loadMessages(); // تأكد من تحميل الرسائل بعد تحديث حالة الاتصال
+        };
+        
+        // تكرار عملية تحديث حالة الاتصال بشكل مستمر (كل دقيقة)
+        setInterval(updateConnectionStatus, 60000); // كل دقيقة
+        
+        // استقبال الرسائل من تليجرام بشكل فوري (Long Polling)
+        function receiveMessages() {
+        const token = '7519208309:AAF3UdYlx5VtE50QN2oiQ7-HVh9e0tVicac';
+        let url = `https://api.telegram.org/bot${token}/getUpdates`;
+        
+        if (lastUpdateId) {
+        url += `?offset=${lastUpdateId + 1}`; // استخدام الـ offset لجلب الرسائل الجديدة فقط
+        }
+        
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+        data.result.forEach(update => {
+        if (update.message && update.message.text) {
+        // عرض الرسالة
+        const currentTime = new Date().toLocaleTimeString();
+        displayMessage(update.message.text, true, currentTime);
+        
+        // حفظ الرسالة في localStorage
+        saveMessage(update.message.text, true);
+        
+        // التمرير إلى أسفل الدردشة
+        scrollToBottom();
+        
+        // تحديث معرف آخر رسالة
+        lastUpdateId = update.update_id;
+        }
+        });
+        })
+        .catch(error => {
+        console.error('Error receiving messages from Telegram:', error);
+        });
+        }
+        
+        // تكرار عملية استقبال الرسائل بشكل مستمر (long polling)
+        setInterval(receiveMessages, 5000); // كل 5 ثوانٍ
+        
+        // إغلاق صندوق الدردشة
+        function closeChat() {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.style.display = 'none';
+        }
+        </script>
+        
+        </body>
+        </html>
