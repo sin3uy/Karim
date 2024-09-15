@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Display Image</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        #uploadImage {
+            margin: 20px;
+        }
+        #imageDisplay {
+            margin-top: 20px;
+            max-width: 100%;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <input type="file" id="fileInput" />
+        <button id="uploadImage">Upload Image</button>
+        <img id="imageDisplay" src="" alt="Uploaded Image" />
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_fqCqSeuh3ccvhCTlpv0lNY9GyV5MBLY",
+            authDomain: "sina-653a0.firebaseapp.com",
+            projectId: "sina-653a0",
+            storageBucket: "sina-653a0.appspot.com",
+            messagingSenderId: "1020175572596",
+            appId: "1:1020175572596:web:1ef0d70958a8ccb8e97b21",
+            measurementId: "G-X99G7FWCSE"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+        const database = firebase.database();
+
+        document.getElementById('uploadImage').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first.');
+                return;
+            }
+
+            const storageRef = storage.ref('images/' + file.name);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Handle progress
+                }, 
+                (error) => {
+                    console.error('Upload failed:', error);
+                }, 
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Save URL to Firebase Realtime Database
+                        database.ref('images').push({ url: downloadURL }).then(() => {
+                            displayImages();
+                        });
+                    });
+                }
+            );
+        });
+
+        function displayImages() {
+            const imageDisplay = document.getElementById('imageDisplay');
+            const imagesRef = database.ref('images');
+
+            imagesRef.once('value', (snapshot) => {
+                const images = snapshot.val();
+                if (images) {
+                    const lastImage = Object.values(images).pop();
+                    imageDisplay.src = lastImage.url;
+                }
+            });
+        }
+
+        // Display image on page load
+        window.onload = displayImages;
+    </script>
+</body>
+</html>
