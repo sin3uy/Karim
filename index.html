@@ -1,68 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع دردشة</title>
+    <title>Upload and Display Image</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
         }
-        #chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            background-color: #f4f4f4;
+        .container {
+            text-align: center;
         }
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #fff;
+        #uploadImage {
+            margin: 20px;
         }
-        #message-input {
-            display: flex;
-        }
-        #message-input input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px 0 0 5px;
-        }
-        #message-input button {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 0 5px 5px 0;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
+        #imageDisplay {
+            margin-top: 20px;
+            max-width: 100%;
+            max-height: 400px;
         }
     </style>
 </head>
 <body>
-    <div id="chat-container">
-        <div id="messages"></div>
-        <div id="message-input">
-            <input type="text" id="message" placeholder="أكتب رسالة...">
-            <button onclick="sendMessage()">إرسال</button>
-        </div>
+    <div class="container">
+        <input type="file" id="fileInput" />
+        <button id="uploadImage">Upload Image</button>
+        <img id="imageDisplay" src="" alt="Uploaded Image" />
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getDatabase, ref, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
-
+    <!-- Firebase App (the core Firebase SDK) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+    <script>
         // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA_fqCqSeuh3ccvhCTlpv0lNY9GyV5MBLY",
@@ -75,32 +50,54 @@
         };
 
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const database = getDatabase(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+        const database = firebase.database();
 
-        // Send a message
-        function sendMessage() {
-            const message = document.getElementById('message').value;
-            if (message.trim()) {
-                const messagesRef = ref(database, 'messages');
-                set(ref(messagesRef.push()), {
-                    message: message,
-                    timestamp: Date.now()
-                });
-                document.getElementById('message').value = '';
+        document.getElementById('uploadImage').addEventListener('click', () => {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first.');
+                return;
             }
+
+            const storageRef = storage.ref('images/' + file.name);
+            const uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Handle progress
+                }, 
+                (error) => {
+                    console.error('Upload failed:', error);
+                }, 
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Save URL to Firebase Realtime Database
+                        database.ref('images').push({ url: downloadURL }).then(() => {
+                            displayImages();
+                        });
+                    });
+                }
+            );
+        });
+
+        function displayImages() {
+            const imageDisplay = document.getElementById('imageDisplay');
+            const imagesRef = database.ref('images');
+
+            imagesRef.once('value', (snapshot) => {
+                const images = snapshot.val();
+                if (images) {
+                    const lastImage = Object.values(images).pop();
+                    imageDisplay.src = lastImage.url;
+                }
+            });
         }
 
-        // Display messages
-        const messagesRef = ref(database, 'messages');
-        onChildAdded(messagesRef, (snapshot) => {
-            const messageData = snapshot.val();
-            const messageElement = document.createElement('div');
-            messageElement.textContent = messageData.message;
-            document.getElementById('messages').appendChild(messageElement);
-            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
-        });
+        // Display image on page load
+        window.onload = displayImages;
     </script>
 </body>
 </html>
