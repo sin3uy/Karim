@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج نشر النصوص</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+    <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_fqCqSeuh3ccvhCTlpv0lNY9GyV5MBLY",
+            authDomain: "sina-653a0.firebaseapp.com",
+            projectId: "sina-653a0",
+            storageBucket: "sina-653a0.appspot.com",
+            messagingSenderId: "1020175572596",
+            appId: "1:1020175572596:web:1ef0d70958a8ccb8e97b21",
+            measurementId: "G-X99G7FWCSE"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+
+        window.onload = function() {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const messagesContainer = document.getElementById('messagesContainer');
+
+            sendButton.addEventListener('click', async () => {
+                const message = messageInput.value;
+                if (message.trim() !== '') {
+                    await db.collection('messages').add({
+                        text: message,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    messageInput.value = '';
+                }
+            });
+
+            db.collection('messages').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+                messagesContainer.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const message = doc.data().text;
+                    const messageElement = document.createElement('div');
+                    messageElement.textContent = message;
+                    messagesContainer.appendChild(messageElement);
+                });
+            });
+        };
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        #messageInput {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+        }
+        #messagesContainer {
+            margin-top: 20px;
+            max-width: 100%;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        #messagesContainer div {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>نموذج نشر النصوص</h1>
+    <input type="text" id="messageInput" placeholder="اكتب نصك هنا...">
+    <button id="sendButton">إرسال</button>
+    <div id="messagesContainer"></div>
+</body>
+</html>
