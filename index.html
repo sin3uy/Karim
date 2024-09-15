@@ -1,83 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>موقع دردشة</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f7f7f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); display: none; }
-        .success { display: none; text-align: center; }
-        input { display: block; width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-        button { background-color: #141b3d; color: #fff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #0f1a3d; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
+        #message-input {
+            display: flex;
+        }
+        #message-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+        }
+        #message-input button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 0 5px 5px 0;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
     </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <div id="message-input">
+            <input type="text" id="message" placeholder="أكتب رسالة...">
+            <button onclick="sendMessage()">إرسال</button>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
-        
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, set, onChildAdded } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js";
+
         // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyAYyxcLOnYxD0vwiq4nZv7GuxrL9POnJQY",
-            authDomain: "chat-8f7b1.firebaseapp.com",
-            databaseURL: "https://chat-8f7b1-default-rtdb.firebaseio.com",
-            projectId: "chat-8f7b1",
-            storageBucket: "chat-8f7b1.appspot.com",
-            messagingSenderId: "683842368948",
-            appId: "1:683842368948:web:77d7a2920d131721022ee1",
-            measurementId: "G-LBPY9S0HRE"
+            apiKey: "AIzaSyA_fqCqSeuh3ccvhCTlpv0lNY9GyV5MBLY",
+            authDomain: "sina-653a0.firebaseapp.com",
+            projectId: "sina-653a0",
+            storageBucket: "sina-653a0.appspot.com",
+            messagingSenderId: "1020175572596",
+            appId: "1:1020175572596:web:1ef0d70958a8ccb8e97b21",
+            measurementId: "G-X99G7FWCSE"
         };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const analytics = getAnalytics(app);
+        const database = getDatabase(app);
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginDiv = document.getElementById('login');
-            const successDiv = document.getElementById('success');
-            
-            // Monitor auth state changes
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    loginDiv.style.display = 'none';
-                    successDiv.style.display = 'block';
-                } else {
-                    loginDiv.style.display = 'block';
-                    successDiv.style.display = 'none';
-                }
-            });
+        // Send a message
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (message.trim()) {
+                const messagesRef = ref(database, 'messages');
+                set(ref(messagesRef.push()), {
+                    message: message,
+                    timestamp: Date.now()
+                });
+                document.getElementById('message').value = '';
+            }
+        }
 
-            // Login function
-            window.login = () => {
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-
-                signInWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => {
-                        // Login successful; auth state change will handle visibility
-                    })
-                    .catch((error) => {
-                        console.error('خطأ في تسجيل الدخول:', error.message);
-                        alert('فشل تسجيل الدخول: ' + error.message);
-                    });
-            };
+        // Display messages
+        const messagesRef = ref(database, 'messages');
+        onChildAdded(messagesRef, (snapshot) => {
+            const messageData = snapshot.val();
+            const messageElement = document.createElement('div');
+            messageElement.textContent = messageData.message;
+            document.getElementById('messages').appendChild(messageElement);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         });
     </script>
-</head>
-<body>
-    <div id="login" class="container">
-        <h2>تسجيل الدخول</h2>
-        <input type="email" id="email" placeholder="البريد الإلكتروني">
-        <input type="password" id="password" placeholder="كلمة السر">
-        <button onclick="login()">تسجيل الدخول</button>
-    </div>
-
-    <div id="success" class="success">
-        <h1>الحمد لله</h1>
-    </div>
 </body>
 </html>
