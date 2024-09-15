@@ -3,52 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Gmail Login</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
-</head>
-<body>
-
-    <h2>تسجيل الدخول باستخدام Gmail</h2>
-    <button id="login-btn">تسجيل الدخول</button>
-
-    <div id="welcome-section" style="display: none;">
-        <h1>الحمد لله</h1>
-        <p>تم تسجيل الدخول بنجاح!</p>
-    </div>
-
-    <script>
-        // إعداد Firebase
+    <title>تسجيل الدخول</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f7f7f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); display: none; }
+        .success { display: none; text-align: center; }
+        input { display: block; width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #141b3d; color: #fff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0f1a3d; }
+    </style>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics.js";
+        
+        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAYyxcLOnYxD0vwiq4nZv7GuxrL9POnJQY",
             authDomain: "chat-8f7b1.firebaseapp.com",
+            databaseURL: "https://chat-8f7b1-default-rtdb.firebaseio.com",
             projectId: "chat-8f7b1",
             storageBucket: "chat-8f7b1.appspot.com",
             messagingSenderId: "683842368948",
-            appId: "683842368948:web:77d7a2920d131721022ee1"
+            appId: "1:683842368948:web:77d7a2920d131721022ee1",
+            measurementId: "G-LBPY9S0HRE"
         };
 
-        // تهيئة Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
-        // زر تسجيل الدخول
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const provider = new firebase.auth.GoogleAuthProvider();
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginDiv = document.getElementById('login');
+            const successDiv = document.getElementById('success');
             
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    console.log('تم تسجيل الدخول بنجاح');
-                    // إخفاء زر تسجيل الدخول
-                    document.getElementById('login-btn').style.display = 'none';
-                    // إظهار رسالة الترحيب
-                    document.getElementById('welcome-section').style.display = 'block';
-                })
-                .catch((error) => {
-                    console.error('حدث خطأ أثناء تسجيل الدخول:', error);
-                });
+            // Monitor auth state changes
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    loginDiv.style.display = 'none';
+                    successDiv.style.display = 'block';
+                } else {
+                    loginDiv.style.display = 'block';
+                    successDiv.style.display = 'none';
+                }
+            });
+
+            // Login function
+            window.login = () => {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => {
+                        // Login successful; auth state change will handle visibility
+                    })
+                    .catch((error) => {
+                        console.error('خطأ في تسجيل الدخول:', error.message);
+                        alert('فشل تسجيل الدخول: ' + error.message);
+                    });
+            };
         });
     </script>
+</head>
+<body>
+    <div id="login" class="container">
+        <h2>تسجيل الدخول</h2>
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة السر">
+        <button onclick="login()">تسجيل الدخول</button>
+    </div>
 
+    <div id="success" class="success">
+        <h1>الحمد لله</h1>
+    </div>
 </body>
 </html>
