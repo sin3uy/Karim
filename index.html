@@ -1,86 +1,117 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نموذج نشر النصوص</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA_fqCqSeuh3ccvhCTlpv0lNY9GyV5MBLY",
-            authDomain: "sina-653a0.firebaseapp.com",
-            projectId: "sina-653a0",
-            storageBucket: "sina-653a0.appspot.com",
-            messagingSenderId: "1020175572596",
-            appId: "1:1020175572596:web:1ef0d70958a8ccb8e97b21",
-            measurementId: "G-X99G7FWCSE"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
-
-        window.onload = function() {
-            const messageInput = document.getElementById('messageInput');
-            const sendButton = document.getElementById('sendButton');
-            const messagesContainer = document.getElementById('messagesContainer');
-
-            sendButton.addEventListener('click', async () => {
-                const message = messageInput.value;
-                if (message.trim() !== '') {
-                    await db.collection('messages').add({
-                        text: message,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    messageInput.value = '';
-                }
-            });
-
-            db.collection('messages').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-                messagesContainer.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const message = doc.data().text;
-                    const messageElement = document.createElement('div');
-                    messageElement.textContent = message;
-                    messagesContainer.appendChild(messageElement);
-                });
-            });
-        };
-    </script>
+    <title>دردشة مجهولة</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
+            padding: 0;
         }
-        #messageInput {
+        #chat-box {
+            width: 80%;
+            height: 400px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            overflow-y: scroll;
+        }
+        #chat-box div {
+            margin-bottom: 10px;
+        }
+        #input-box {
+            width: 80%;
+            margin: 10px auto;
+            display: flex;
+            justify-content: space-between;
+        }
+        #message {
             width: 80%;
             padding: 10px;
-            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
-        #sendButton {
-            padding: 10px 20px;
-        }
-        #messagesContainer {
-            margin-top: 20px;
-            max-width: 100%;
-            border: 1px solid #ddd;
+        #send-btn {
             padding: 10px;
-            overflow-y: auto;
-            max-height: 400px;
-        }
-        #messagesContainer div {
-            padding: 5px;
-            border-bottom: 1px solid #eee;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <h1>نموذج نشر النصوص</h1>
-    <input type="text" id="messageInput" placeholder="اكتب نصك هنا...">
-    <button id="sendButton">إرسال</button>
-    <div id="messagesContainer"></div>
+
+    <div id="chat-box"></div>
+
+    <div id="input-box">
+        <input type="text" id="message" placeholder="أدخل رسالتك هنا">
+        <button id="send-btn">إرسال</button>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-analytics.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-auth.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyBcwPKfzLSLvGSE7m2yDBZAS5AroslD2hw",
+          authDomain: "shegdg-de059.firebaseapp.com",
+          databaseURL: "https://shegdg-de059-default-rtdb.firebaseio.com",
+          projectId: "shegdg-de059",
+          storageBucket: "shegdg-de059.appspot.com",
+          messagingSenderId: "755226615294",
+          appId: "1:755226615294:web:6abcde9f78eb47cc5db4af",
+          measurementId: "G-LHTWB5G5Q3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+        // Initialize Firebase services
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // Enable anonymous authentication
+        signInAnonymously(auth).catch(function(error) {
+            console.error("Error during anonymous sign-in:", error.message);
+        });
+
+        // Reference to the chat messages in the database
+        const chatRef = ref(db, 'chats');
+
+        // Send message
+        document.getElementById('send-btn').addEventListener('click', function() {
+            const message = document.getElementById('message').value;
+            if (message) {
+                const timestamp = new Date().toLocaleString();
+                push(chatRef, {
+                    message: message,
+                    timestamp: timestamp
+                });
+                document.getElementById('message').value = '';  // Clear input after sending
+            }
+        });
+
+        // Receive and display messages
+        onChildAdded(chatRef, function(snapshot) {
+            const data = snapshot.val();
+            const chatBox = document.getElementById('chat-box');
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = `${data.timestamp}: ${data.message}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to the latest message
+        });
+    </script>
 </body>
 </html>
