@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نشر المقالة</title>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <h1>نشر المقالة</h1>
+  <form id="articleForm">
+    <label for="title">العنوان:</label>
+    <input type="text" id="title" required><br><br>
+    
+    <label for="content">النص:</label>
+    <textarea id="content" required></textarea><br><br>
+    
+    <label for="imageUrl">رابط الصورة:</label>
+    <input type="text" id="imageUrl" required><br><br>
+    
+    <button type="submit">نشر المقالة</button>
+  </form>
+
+  <p id="message"></p>
+</body>
+</html>
