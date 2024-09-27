@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نشر مقال</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background-color: #f4f4f4;
+        }
+        form {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>نشر مقال جديد</h1>
+    <form id="publishForm">
+        <label for="title">عنوان المقال:</label><br>
+        <input type="text" id="title" required><br><br>
+        <label for="content">محتوى المقال:</label><br>
+        <textarea id="content" rows="4" required></textarea><br><br>
+        <button type="submit">نشر المقال</button>
+    </form>
+
+    <script>
+        document.getElementById('publishForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+
+            // إضافة المقال إلى ملف JSON (تحتاج إلى تنفيذ هذا باستخدام لغة مثل PHP أو Node.js)
+            fetch('publish.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, content })
+            }).then(response => {
+                if (response.ok) {
+                    alert('تم نشر المقال بنجاح!');
+                    document.getElementById('publishForm').reset();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
